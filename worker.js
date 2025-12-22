@@ -1900,47 +1900,6 @@ body.dark-theme .admin-panel-hint{
       try{ new URL(url); return true; }catch(e){ return false; }
     }
 
-
-    function getIconChoiceKey(link){
-      const u = (link && link.url) ? String(link.url) : "";
-      // 使用 URL 作为稳定 key，避免改数据结构
-      return "navcf:iconChoice:" + u;
-    }
-    function readIconChoice(link){
-      try{
-        const k = getIconChoiceKey(link);
-        const v = localStorage.getItem(k);
-        if(v === null || v === undefined || v === "") return null;
-        const n = parseInt(v, 10);
-        return Number.isFinite(n) ? n : null;
-      }catch(e){
-        return null;
-      }
-    }
-    function writeIconChoice(link, idx){
-      try{
-        const k = getIconChoiceKey(link);
-        localStorage.setItem(k, String(idx));
-      }catch(e){}
-    }
-    function getIconCandidates(link){
-      const candidates = [];
-      const iconUrl = (link && typeof link.icon === "string") ? link.icon.trim() : "";
-      // 自定义 icon（支持 png/ico/svg）优先
-      if(iconUrl && isValidUrl(iconUrl)) candidates.push(iconUrl);
-
-      const domain = extractDomain((link && link.url) ? link.url : "").replace(/^www\./, "");
-      if(domain){
-        // 平台1：Google favicon（PNG）
-        candidates.push("https://www.google.com/s2/favicons?sz=64&domain=" + domain);
-        // 平台2：DuckDuckGo favicon（ICO）
-        candidates.push("https://icons.duckduckgo.com/ip3/" + domain + ".ico");
-        // 平台3：FaviconExtractor（ICO/PNG）
-        candidates.push("https://www.faviconextractor.com/favicon/" + domain);
-      }
-      return candidates;
-    }
-
     function createCard(link, container){
       const card = document.createElement("div");
       card.className = "card";
@@ -1960,62 +1919,17 @@ body.dark-theme .admin-panel-hint{
         '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>' +
         '</svg>';
 
-            const icon = document.createElement("img");
-            icon.className = "card-icon";
-            icon.alt = "Website Icon";
-            icon.referrerPolicy = "no-referrer";
-
-            // 多平台 favicon 自动回退（PNG/ICO/SVG 都支持：自定义 icon 优先）
-            const iconCandidates = getIconCandidates(link);
-
-            // 记住用户“手动切换到的来源”（localStorage，不改数据结构）
-            const prefIdx = readIconChoice(link);
-            const startIdx = (prefIdx !== null && prefIdx >= 0 && prefIdx < iconCandidates.length) ? prefIdx : 0;
-
-            if(iconCandidates.length){
-              icon.dataset.iconIndex = String(startIdx);
-              icon.src = iconCandidates[startIdx];
-            }else{
-              // 没有任何候选时，直接使用默认图标
-              const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
-              const svgUrl = URL.createObjectURL(svgBlob);
-              icon.src = svgUrl;
-              icon.onload = function(){ URL.revokeObjectURL(svgUrl); };
-            }
-
-            icon.onerror = function(){
-              const idx = parseInt(this.dataset.iconIndex || "0", 10);
-              const next = (isNaN(idx) ? 0 : idx) + 1;
-
-              if(iconCandidates && next < iconCandidates.length){
-                this.dataset.iconIndex = String(next);
-                this.src = iconCandidates[next];
-                return;
-              }
-
-              // 全部失败：回退默认 SVG
-              const svgBlob2 = new Blob([defaultIconSVG], { type:"image/svg+xml" });
-              const svgUrl2 = URL.createObjectURL(svgBlob2);
-              this.src = svgUrl2;
-              this.onload = function(){ URL.revokeObjectURL(svgUrl2); };
-            };
-
-            // 不满意时：点一下小图标就切换到下一个来源（不会打开链接）
-            icon.addEventListener("click", function(e){
-              e.preventDefault();
-              e.stopPropagation();
-              if(!iconCandidates || !iconCandidates.length) return;
-
-              let idx = parseInt(this.dataset.iconIndex || "0", 10);
-              if(!Number.isFinite(idx)) idx = 0;
-
-              const next = (idx + 1) % iconCandidates.length;
-              this.dataset.iconIndex = String(next);
-              this.src = iconCandidates[next];
-              writeIconChoice(link, next);
-            });
-
-
+      const icon = document.createElement("img");
+      icon.className = "card-icon";
+      icon.src = (!link.icon || typeof link.icon !== "string" || !link.icon.trim() || !isValidUrl(link.icon))
+        ? "https://www.faviconextractor.com/favicon/" + extractDomain(link.url)
+        : link.icon;
+      icon.alt = "Website Icon";
+      icon.onerror = function(){
+        const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        this.src = svgUrl;
+        this.onload = function(){ URL.revokeObjectURL(svgUrl); };
       };
 
       const title = document.createElement("div");
