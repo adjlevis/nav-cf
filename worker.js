@@ -1889,28 +1889,6 @@ body.dark-theme .admin-panel-hint{
     function isValidUrl(url){
       try{ new URL(url); return true; }catch(e){ return false; }
     }
-function getIconChoiceKey(link){
-      const u = (link && link.url) ? String(link.url) : "";
-      // 使用 URL 作为稳定 key，避免改数据结构
-      return "navcf:iconChoice:" + u;
-    }
-    function readIconChoice(link){
-      try{
-        const k = getIconChoiceKey(link);
-        const v = localStorage.getItem(k);
-        if(v === null || v === undefined || v === "") return null;
-        const n = parseInt(v, 10);
-        return Number.isFinite(n) ? n : null;
-      }catch(e){
-        return null;
-      }
-    }
-    function writeIconChoice(link, idx){
-      try{
-        const k = getIconChoiceKey(link);
-        localStorage.setItem(k, String(idx));
-      }catch(e){}
-    }
 function getIconCandidates(link){
       const candidates = [];
       const iconUrl = (link && typeof link.icon === "string") ? link.icon.trim() : "";
@@ -1956,14 +1934,9 @@ function getIconCandidates(link){
 
       // 多平台 favicon 自动回退（PNG/ICO/SVG 都支持：自定义 icon 优先）
       const iconCandidates = getIconCandidates(link);
-
-      // 记住用户“手动切换到的来源”（localStorage，不改数据结构）
-      const prefIdx = readIconChoice(link);
-      const startIdx = (prefIdx !== null && prefIdx >= 0 && prefIdx < iconCandidates.length) ? prefIdx : 0;
-
       if(iconCandidates.length){
-        icon.dataset.iconIndex = String(startIdx);
-        icon.src = iconCandidates[startIdx];
+        icon.dataset.iconIndex = "0";
+        icon.src = iconCandidates[0];
       }else{
         // 没有任何候选时，直接使用默认图标
         const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
@@ -1988,21 +1961,6 @@ function getIconCandidates(link){
         this.src = svgUrl;
         this.onload = function(){ URL.revokeObjectURL(svgUrl); };
       };
-
-      // 一键切换下一个图标来源：点击小图标即可切换（不会打开链接）
-      icon.addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        if(!iconCandidates || !iconCandidates.length) return;
-
-        let idx = parseInt(this.dataset.iconIndex || "0", 10);
-        if(!Number.isFinite(idx)) idx = 0;
-
-        const next = (idx + 1) % iconCandidates.length;
-        this.dataset.iconIndex = String(next);
-        this.src = iconCandidates[next];
-        writeIconChoice(link, next);
-      });
 
       const title = document.createElement("div");
       title.className = "card-title";
