@@ -2924,7 +2924,7 @@ body.dark-theme .admin-panel-hint{
     function getExportFileName(){
       const d = new Date();
       const pad2 = (n)=>String(n).padStart(2,'0');
-      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}.${pad2(d.getHours())}.${pad2(d.getMinutes())}.${pad2(d.getSeconds())}.json`;
+      return d.getFullYear()+"."+pad2(d.getMonth()+1)+"."+pad2(d.getDate())+"."+pad2(d.getHours())+"."+pad2(d.getMinutes())+"."+pad2(d.getSeconds())+".json";
     }
 
     async function exportData(){
