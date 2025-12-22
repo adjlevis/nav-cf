@@ -1261,18 +1261,17 @@ body.logged-in .admin-panel-hint{ display:inline-block; }
     </div>
   </div>
 
-  <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作:</div>
-      <div class="admin-action admin-action-right">
-        <span class="admin-label">0.修改站点名称</span>
-        <button class="round-btn" onclick="editSiteTitle()" title="修改站点名称">
+      <div class="admin-panel-title">后台操作</div>
+      <div class="admin-action">
+        <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
             <path d="M14 34l20-20 6 6-20 20H14v-6z" stroke="white" stroke-width="4" fill="none"/>
           </svg>
         </button>
+        <span class="admin-label">0.修改站点名称</span>
       </div>
 
 
@@ -1338,9 +1337,6 @@ body.logged-in .admin-panel-hint{ display:inline-block; }
       </button>
         <span class="admin-label">6.导入数据（覆盖恢复）</span>
       </div>
-
-      <input type="file" id="import-file" accept="application/json" style="display:none;" />
-    </div>
 <!-- 分类和卡片容器 -->
     <div id="sections-container"></div>
 
