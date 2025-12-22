@@ -28,7 +28,7 @@ function getAuthStatus(request, env) {
 
 function cleanDomain(hostname) {
   return hostname
-    .replace(/^www\./, "")
+    .replace(/^www\\./, "")
     .replace(/^cn\./, "")
     .split(".")[0];
 }
@@ -1921,20 +1921,88 @@ body.dark-theme .admin-panel-hint{
 
       const icon = document.createElement("img");
       icon.className = "card-icon";
-      icon.src = (!link.icon || typeof link.icon !== "string" || !link.icon.trim() || !isValidUrl(link.icon))
-        ? "https://www.faviconextractor.com/favicon/" + extractDomain(link.url)
-        : link.icon;
       icon.alt = "Website Icon";
-      icon.onerror = function(){
+
+      // ===== Icon sources (custom -> Google -> DuckDuckGo -> FaviconExtractor -> default SVG) =====
+      const _domain = extractDomain(link.url).replace(/^www\\./, "");
+      const _iconPrefKey = "navcf_icon_src_index:" + encodeURIComponent(link.url);
+      const _iconSources = ["custom","google","ddg","extractor"];
+      let _iconIndex = parseInt(localStorage.getItem(_iconPrefKey) || "", 10);
+      if(!Number.isFinite(_iconIndex) || _iconIndex < 0 || _iconIndex >= _iconSources.length) _iconIndex = 0;
+
+      const _customIcon = (link.icon && typeof link.icon === "string" && link.icon.trim() && isValidUrl(link.icon))
+        ? link.icon.trim()
+        : "";
+
+      function _getIconSrcByIndex(idx){
+        const t = _iconSources[idx];
+        if(t === "custom") return _customIcon || "";
+        if(t === "google") return "https://www.google.com/s2/favicons?sz=64&domain=" + encodeURIComponent(_domain);
+        if(t === "ddg") return "https://icons.duckduckgo.com/ip3/" + _domain + ".ico";
+        if(t === "extractor") return "https://www.faviconextractor.com/favicon/" + _domain;
+        return "";
+      }
+
+      function _setDefaultIcon(){
+        icon.onerror = null;
         const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
         const svgUrl = URL.createObjectURL(svgBlob);
-        this.src = svgUrl;
-        this.onload = function(){ URL.revokeObjectURL(svgUrl); };
+        icon.src = svgUrl;
+        icon.onload = function(){ URL.revokeObjectURL(svgUrl); };
+      }
+
+      // initial render + auto fallback
+      let _fallbackTries = 0;
+      icon.onerror = function(){
+        _fallbackTries++;
+        if(_fallbackTries > _iconSources.length + 1){
+          _setDefaultIcon();
+          return;
+        }
+        for(let i=0;i<_iconSources.length;i++){
+          _iconIndex = (_iconIndex + 1) % _iconSources.length;
+          const s = _getIconSrcByIndex(_iconIndex);
+          if(s){
+            icon.src = s;
+            return;
+          }
+        }
+        _setDefaultIcon();
       };
 
-      const title = document.createElement("div");
-      title.className = "card-title";
-      title.textContent = link.name;
+      // set preferred index; if invalid/empty, let onerror fallback
+      (function(){
+        let applied = false;
+        for(let i=0;i<_iconSources.length;i++){
+          const s = _getIconSrcByIndex(_iconIndex);
+          if(s){
+            icon.src = s;
+            applied = true;
+            break;
+          }
+          _iconIndex = (_iconIndex + 1) % _iconSources.length;
+        }
+        if(!applied) _setDefaultIcon();
+      })();
+
+      // click icon to cycle next source (saved in localStorage; doesn't change your data structure)
+      icon.addEventListener("click", function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        _fallbackTries = 0;
+
+        for(let i=0;i<_iconSources.length;i++){
+          _iconIndex = (_iconIndex + 1) % _iconSources.length;
+          const s = _getIconSrcByIndex(_iconIndex);
+          if(s){
+            localStorage.setItem(_iconPrefKey, String(_iconIndex));
+            icon.src = s + (s.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
+            return;
+          }
+        }
+        localStorage.removeItem(_iconPrefKey);
+        _setDefaultIcon();
+      });
 
       cardTop.appendChild(icon);
       cardTop.appendChild(title);
