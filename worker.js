@@ -240,15 +240,11 @@ export default {
       const userId = url.searchParams.get("userId") || SEED_USER_ID;
       const raw = await env.CARD_ORDER.get(userId, "json");
       const data = normalizeData(raw || SEED_DATA);
-      const _pad2 = (n) => String(n).padStart(2, "0");
-      const _now = new Date();
-      const _fileName = `${_now.getFullYear()}.${_pad2(_now.getMonth()+1)}.${_pad2(_now.getDate())}.${_pad2(_now.getHours())}.${_pad2(_now.getMinutes())}.${_pad2(_now.getSeconds())}.json`;
-
 
       return new Response(JSON.stringify(data, null, 2), {
         headers: {
           "content-type": "application/json; charset=UTF-8",
-          "content-disposition": `attachment; filename="${_fileName}"`
+          "content-disposition": 'attachment; filename="cardtab_export.json"'
         }
       });
     }
@@ -1261,17 +1257,18 @@ body.logged-in .admin-panel-hint{ display:inline-block; }
     </div>
   </div>
 
+  <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作</div>
-      <div class="admin-action">
-        <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
+      <div class="admin-panel-title">后台操作:</div>
+      <div class="admin-action admin-action-right">
+        <span class="admin-label">0.修改站点名称</span>
+        <button class="round-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
             <path d="M14 34l20-20 6 6-20 20H14v-6z" stroke="white" stroke-width="4" fill="none"/>
           </svg>
         </button>
-        <span class="admin-label">0.修改站点名称</span>
       </div>
 
 
@@ -1337,6 +1334,9 @@ body.logged-in .admin-panel-hint{ display:inline-block; }
       </button>
         <span class="admin-label">6.导入数据（覆盖恢复）</span>
       </div>
+
+      <input type="file" id="import-file" accept="application/json" style="display:none;" />
+    </div>
 <!-- 分类和卡片容器 -->
     <div id="sections-container"></div>
 
@@ -2539,7 +2539,7 @@ if(window.PointerEvent){
       if(isLoggedIn){
         loginBtn.textContent = "退出登录";
         adminBtn.style.display = "inline-block";
-        adminBtn.textContent = isAdmin ? "离开设置" : "设置①";
+        adminBtn.textContent = isAdmin ? "离开设置③" : "设置①";
 
         document.body.classList.add("logged-in");
         if(handle) handle.style.display = "block";
