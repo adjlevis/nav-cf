@@ -1,0 +1,11 @@
+{
+  "name": "nav-cf",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3.30.0"
+  }
+}

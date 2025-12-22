@@ -1,0 +1,13 @@
+name = "nav-cf"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[kv_namespaces]]
+binding = "CARD_ORDER"
+id = "e654ba9138c749e8a6426305e169e099"
+preview_id = ""
+
+[vars]
+ADMIN_PASSWORD = "root"
+AI_API_KEY = "你的openaiapi-sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
