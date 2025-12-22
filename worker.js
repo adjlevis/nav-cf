@@ -1264,7 +1264,7 @@ body.logged-in .admin-panel-hint{ display:inline-block; }
   <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作</div>
+      <div class="admin-panel-title">后台操作:</div>
       <div class="admin-action admin-action-right">
         <span class="admin-label">0.修改站点名称</span>
         <button class="round-btn" onclick="editSiteTitle()" title="修改站点名称">
