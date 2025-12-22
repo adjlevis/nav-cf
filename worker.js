@@ -240,15 +240,11 @@ export default {
       const userId = url.searchParams.get("userId") || SEED_USER_ID;
       const raw = await env.CARD_ORDER.get(userId, "json");
       const data = normalizeData(raw || SEED_DATA);
-      const _pad2 = (n) => String(n).padStart(2, "0");
-      const _now = new Date();
-      const _fileName = `${_now.getFullYear()}.${_pad2(_now.getMonth()+1)}.${_pad2(_now.getDate())}.${_pad2(_now.getHours())}.${_pad2(_now.getMinutes())}.${_pad2(_now.getSeconds())}.json`;
-
 
       return new Response(JSON.stringify(data, null, 2), {
         headers: {
           "content-type": "application/json; charset=UTF-8",
-          "content-disposition": `attachment; filename="${_fileName}"`
+          "content-disposition": 'attachment; filename="cardtab_export.json"'
         }
       });
     }
@@ -283,7 +279,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nav-CF</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>"><text y=%22.9em%22 font-size=%2280%22>?</text></svg>">
   <style>
     /* ========= 全局 ========= */
     :root{
@@ -665,20 +661,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
       line-height:1.2;
     }
     body.dark-theme .admin-label{ color:#e5e7eb; }
-    /* 后台操作：文字在左，图标在右并对齐；图标更小 */
-    .add-remove-controls .admin-action{ gap:8px; }
-    .add-remove-controls .admin-action .admin-label{ flex:1; min-width:0; }
-    .add-remove-controls .admin-action .round-btn{
-      margin-left:auto;
-      width:34px;height:34px;
-      font-size:18px;
-      box-shadow:0 2px 8px rgba(0,0,0,.14);
-    }
-    .add-remove-controls .admin-action .round-btn svg{
-      width:18px !important;
-      height:18px !important;
-    }
-    .add-remove-controls .site-title-btn{ order:1; }
 .round-btn{
       background:var(--primary);
       color:#fff;border:none;border-radius:50%;
@@ -1113,6 +1095,14 @@ const HTML_CONTENT = `<!DOCTYPE html>
     }
   
 /* ===== 后台操作面板修正（固定不随页面滚动） ===== */
+.add-remove-controls{
+  position: fixed !important;
+  right: 20px;
+  top: 200px;
+  max-height: calc(100vh - 240px);
+  overflow-y: auto;
+  z-index: 2000;
+}
 
 
 /* ===== 描述输入框 + AI 按钮对齐修正 ===== */
@@ -1264,7 +1254,7 @@ body.dark-theme .admin-panel-hint{
     <div class="add-remove-controls">
       <div class="admin-panel-title">后台操作</div>
       <div class="admin-action">
-        <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
+        <button class="round-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
             <path d="M14 34l20-20 6 6-20 20H14v-6z" stroke="white" stroke-width="4" fill="none"/>
@@ -1337,7 +1327,30 @@ body.dark-theme .admin-panel-hint{
         <span class="admin-label">6.导入数据（覆盖恢复）</span>
       </div>
 
+      <div class="admin-action">
+        <button class="round-btn export-bookmarks-btn" onclick="exportBookmarks()" title="导出书签（HTML）">
+          <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 6h24v36l-12-8-12 8V6z" stroke="white" stroke-width="4" fill="none" stroke-linejoin="round"/>
+            <path d="M24 12v14" stroke="white" stroke-width="4" stroke-linecap="round"/>
+            <path d="M18 22l6 6 6-6" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </button>
+        <span class="admin-label">7.导出书签（HTML）</span>
+      </div>
+
+      <div class="admin-action">
+        <button class="round-btn import-bookmarks-btn" onclick="triggerBookmarkImport()" title="导入书签（HTML 合并分类）">
+          <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 6h24v36l-12-8-12 8V6z" stroke="white" stroke-width="4" fill="none" stroke-linejoin="round"/>
+            <path d="M24 36V22" stroke="white" stroke-width="4" stroke-linecap="round"/>
+            <path d="M18 28l6-6 6 6" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </button>
+        <span class="admin-label">8.导入书签（HTML 合并归类）</span>
+      </div>
+
       <input type="file" id="import-file" accept="application/json" style="display:none;" />
+      <input type="file" id="bookmark-import-file" accept=".html,.htm,text/html" style="display:none;" />
     </div>
 <!-- 分类和卡片容器 -->
     <div id="sections-container"></div>
@@ -2525,7 +2538,7 @@ body.dark-theme .admin-panel-hint{
       if(isLoggedIn){
         loginBtn.textContent = "退出登录";
         adminBtn.style.display = "inline-block";
-        adminBtn.textContent = isAdmin ? "离开设置③" : "设置①";
+        adminBtn.textContent = isAdmin ? "离开设置" : "设置";
       }else{
         loginBtn.textContent = "登录";
         adminBtn.style.display = "none";
@@ -2587,7 +2600,7 @@ body.dark-theme .admin-panel-hint{
         addRemoveControls.style.display = "none";
         await reloadCardsAsAdmin();
         await customAlert("设置已保存", "设置完成");
-        logAction("离开设置③");
+        logAction("离开设置");
       }
 
       updateLoginButton();
@@ -2920,13 +2933,6 @@ body.dark-theme .admin-panel-hint{
     }
 
     /* ================= 导出/导入（后台数据库） ================= */
-
-    function getExportFileName(){
-      const d = new Date();
-      const pad2 = (n)=>String(n).padStart(2,'0');
-      return d.getFullYear()+"."+pad2(d.getMonth()+1)+"."+pad2(d.getDate())+"."+pad2(d.getHours())+"."+pad2(d.getMinutes())+"."+pad2(d.getSeconds())+".json";
-    }
-
     async function exportData(){
       if(!await validateToken()) return;
       try{
@@ -2944,7 +2950,7 @@ body.dark-theme .admin-panel-hint{
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = getExportFileName();
+        a.download = "cardtab_export.json";
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -3003,6 +3009,302 @@ body.dark-theme .admin-panel-hint{
       }catch(err){
         hideLoading();
         await customAlert("导入失败：" + (err && err.message ? err.message : "请确认文件是正确的 JSON 文件"), "导入");
+      }
+    });
+
+    /* ================= 浏览器书签 导出/导入（HTML） ================= */
+    function _escapeHtml(str){
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function _normalizeUrlForDedupe(u){
+      try{
+        const url = new URL(String(u || "").trim());
+        // canonical: origin + path(no trailing slash unless root) + search
+        let path = url.pathname || "/";
+        if(path.length > 1) path = path.replace(/\/+$/,"");
+        return (url.origin + path + (url.search || "")).toLowerCase();
+      }catch{
+        return String(u || "").trim().toLowerCase();
+      }
+    }
+
+    function _cleanDomainClient(hostname){
+      return String(hostname || "")
+        .replace(/^www\./i, "")
+        .replace(/^cn\./i, "")
+        .split(".")[0]
+        .toLowerCase();
+    }
+
+    function _extractHostname(u){
+      try{ return new URL(String(u || "").trim()).hostname; }catch{ return ""; }
+    }
+
+    function _buildBookmarksHTML(data){
+      const d = data && typeof data === "object" ? data : { links: [], categories: {} };
+      const cats = (d.categories && typeof d.categories === "object") ? d.categories : {};
+      const catNames = Object.keys(cats);
+      const byCat = {};
+      for(const c of catNames){
+        const arr = Array.isArray(cats[c]) ? cats[c] : [];
+        byCat[c] = arr.filter(Boolean);
+      }
+
+      // Fallback: if categories empty, group by link.category
+      if(catNames.length === 0){
+        for(const l of (Array.isArray(d.links)? d.links: [])){
+          const c = (l && l.category) ? l.category : "常用";
+          if(!byCat[c]) byCat[c] = [];
+          byCat[c].push(l);
+        }
+      }
+
+      const now = Math.floor(Date.now()/1000);
+      let html = '';
+      html += '<!DOCTYPE NETSCAPE-Bookmark-file-1>\n';
+      html += '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n';
+      html += '<TITLE>Bookmarks</TITLE>\n';
+      html += '<H1>Bookmarks</H1>\n';
+      html += '<DL><p>\n';
+
+      const finalCats = Object.keys(byCat);
+      for(const cat of finalCats){
+        html += '  <DT><H3 ADD_DATE="' + now + '">' + _escapeHtml(cat) + '</H3>\n';
+html += '  <DL><p>\n';
+        for(const link of (byCat[cat] || [])){
+          if(!link || !link.url) continue;
+          const name = _escapeHtml(link.name || link.url);
+          const url = _escapeHtml(link.url);
+          const tips = (link.tips || "").trim();
+          const iconAttr = (link.icon && typeof link.icon === "string" && link.icon.trim()) ? ' ICON_URI="' + _escapeHtml(link.icon.trim()) + '"': "";
+html += '    <DT><A HREF="' + url + '"' + iconAttr + ' ADD_DATE="' + now + '">' + name + '</A>\n';
+if(tips) html += '    <DD>' + _escapeHtml(tips) + '\n';
+}
+        html += '  </DL><p>\n';
+      }
+      html += '</DL><p>\n';
+      return html;
+    }
+
+    function _parseBrowserBookmarksHTML(htmlText){
+      const doc = new DOMParser().parseFromString(String(htmlText || ""), "text/html");
+      const rootDL = doc.querySelector("dl");
+      const items = [];
+
+      function walk(dl, folderName){
+        if(!dl) return;
+        const children = Array.from(dl.children || []);
+        for(let i=0;i<children.length;i++){
+          const el = children[i];
+          if(!el || !el.tagName) continue;
+
+          if(el.tagName.toUpperCase() === "DT"){
+            const h3 = el.querySelector("h3");
+            const a = el.querySelector("a");
+            if(h3){
+              const next = children[i+1];
+              const subDL = (next && next.tagName && next.tagName.toUpperCase() === "DL") ? next : el.querySelector("dl");
+              const folder = (h3.textContent || "").trim() || folderName;
+              walk(subDL, folder);
+            }else if(a){
+              const url = (a.getAttribute("href") || "").trim();
+              if(!url) continue;
+              const title = (a.textContent || "").trim() || url;
+              // DD often follows DT
+              let dd = children[i+1];
+              let desc = "";
+              if(dd && dd.tagName && dd.tagName.toUpperCase() === "DD") desc = (dd.textContent || "").trim();
+              const icon = (a.getAttribute("icon_uri") || a.getAttribute("icon") || "").trim();
+              items.push({ name: title, url, tips: desc, folder: folderName, icon });
+            }
+          }else if(el.tagName.toUpperCase() === "DL"){
+            walk(el, folderName);
+          }
+        }
+      }
+
+      walk(rootDL, "常用");
+      return items;
+    }
+
+    function _resolveCategoryForImport(item, existingCategoryNames, domainToCategory){
+      const defaultCat = existingCategoryNames.includes("常用") ? "常用" : (existingCategoryNames[0] || "常用");
+
+      const host = _extractHostname(item.url);
+      const d = _cleanDomainClient(host);
+      if(d && domainToCategory[d]) return domainToCategory[d];
+
+      // Folder name mapping: exact / normalized / substring
+      const folder = String(item.folder || "").trim();
+      if(folder){
+        const norm = folder.replace(/\s+/g,"").toLowerCase();
+        for(const c of existingCategoryNames){
+          if(c === folder) return c;
+        }
+        for(const c of existingCategoryNames){
+          const cn = String(c).replace(/\s+/g,"").toLowerCase();
+          if(cn && (cn === norm || cn.includes(norm) || norm.includes(cn))) return c;
+        }
+      }
+      return defaultCat;
+    }
+
+    async function exportBookmarks(){
+      if(!await validateToken()) return;
+      try{
+        showLoading("正在导出书签...");
+        const res = await fetch("/api/getLinks?userId=testUser", {
+          method:"GET",
+          headers:{ "Authorization": localStorage.getItem("authToken") }
+        });
+        if(!res.ok){
+          hideLoading();
+          await customAlert("导出书签失败，请重试", "导出书签");
+          return;
+        }
+        const data = await res.json();
+        const html = _buildBookmarksHTML(data);
+        const blob = new Blob([html], { type:"text/html;charset=UTF-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "nav_bookmarks_export.html";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        hideLoading();
+        await customAlert("已导出为 HTML 书签文件", "导出书签");
+      }catch(e){
+        hideLoading();
+        console.error(e);
+        await customAlert("导出书签失败：" + (e && e.message ? e.message : e), "导出书签");
+      }
+    }
+
+    function triggerBookmarkImport(){
+      const input = document.getElementById("bookmark-import-file");
+      if(!input) return;
+      input.value = "";
+      input.click();
+    }
+
+    document.getElementById("bookmark-import-file").addEventListener("change", async function(e){
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      if(!await validateToken()) return;
+
+      const confirmed = await customConfirm(
+        "导入会把浏览器书签合并到现有数据，并按已有分类自动归类（不会覆盖原数据），继续吗？",
+        "继续导入",
+        "取消"
+      );
+      if(!confirmed) return;
+
+      try{
+        showLoading("正在解析书签...");
+        const htmlText = await file.text();
+        const imported = _parseBrowserBookmarksHTML(htmlText);
+        if(!imported.length){
+          hideLoading();
+          await customAlert("没有解析到任何书签（请确认上传的是浏览器导出的书签 HTML）", "导入书签");
+          return;
+        }
+
+        showLoading("正在获取当前数据...");
+        const res = await fetch("/api/getLinks?userId=testUser", {
+          method:"GET",
+          headers:{ "Authorization": localStorage.getItem("authToken") }
+        });
+        if(!res.ok){
+          hideLoading();
+          await customAlert("获取当前数据失败，请重试", "导入书签");
+          return;
+        }
+        const data = await res.json();
+        data.links = Array.isArray(data.links) ? data.links : [];
+        data.categories = (data.categories && typeof data.categories === "object") ? data.categories : {};
+
+        const existingCategoryNames = Object.keys(data.categories);
+        const defaultCat = existingCategoryNames.includes("常用") ? "常用" : (existingCategoryNames[0] || "常用");
+        if(!data.categories[defaultCat]) data.categories[defaultCat] = Array.isArray(data.categories[defaultCat]) ? data.categories[defaultCat] : [];
+
+        // Build domain->category map from existing database
+        const domainToCategory = {};
+        for(const c of Object.keys(data.categories)){
+          const arr = Array.isArray(data.categories[c]) ? data.categories[c] : [];
+          for(const l of arr){
+            if(!l || !l.url) continue;
+            const host = _extractHostname(l.url);
+            const d = _cleanDomainClient(host);
+            if(d && !domainToCategory[d]) domainToCategory[d] = c;
+          }
+        }
+
+        // Dedup by URL
+        const urlSet = new Set(data.links.map(l => _normalizeUrlForDedupe(l && l.url)));
+
+        let added = 0;
+        for(const item of imported){
+          const normUrl = _normalizeUrlForDedupe(item.url);
+          if(!normUrl || urlSet.has(normUrl)) continue;
+
+          const cat = _resolveCategoryForImport(item, existingCategoryNames, domainToCategory);
+          const finalCat = data.categories[cat] ? cat : defaultCat;
+
+          const link = {
+            name: (item.name || "").trim() || item.url,
+            url: (item.url || "").trim(),
+            tips: (item.tips || "").trim(),
+            icon: (item.icon && typeof item.icon === "string" && item.icon.trim().length < 5120) ? item.icon.trim() : "",
+            category: finalCat,
+            isPrivate: false
+          };
+
+          data.links.push(link);
+          if(!Array.isArray(data.categories[finalCat])) data.categories[finalCat] = [];
+          data.categories[finalCat].push(link);
+
+          urlSet.add(normUrl);
+          added++;
+        }
+
+        if(added === 0){
+          hideLoading();
+          await customAlert("没有新增书签（可能都已存在）", "导入书签");
+          return;
+        }
+
+        showLoading("正在保存到数据库...");
+        const saveRes = await fetch("/api/importData", {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization": localStorage.getItem("authToken")
+          },
+          body: JSON.stringify({ userId:"testUser", data })
+        });
+
+        if(!saveRes.ok){
+          hideLoading();
+          await customAlert("保存失败，请重试", "导入书签");
+          return;
+        }
+
+        hideLoading();
+        await loadLinks();
+        renderSections();
+        await customAlert("导入完成：新增 " + added + " 条书签", "导入书签");
+      }catch(err){
+        hideLoading();
+        console.error(err);
+        await customAlert("导入失败：" + (err && err.message ? err.message : err), "导入书签");
       }
     });
 
@@ -3161,7 +3463,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
-<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作:"></div>
+<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作"></div>
 
 
 <script>
@@ -3173,7 +3475,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const hint = document.createElement("span");
   hint.className = "admin-panel-hint";
-  hint.textContent = "点我②";
+  hint.textContent = "点我";
 
   document.body.appendChild(hint);
 
