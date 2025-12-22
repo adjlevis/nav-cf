@@ -279,7 +279,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nav-CF</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>"><text y=%22.9em%22 font-size=%2280%22>?</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>">
   <style>
     /* ========= 全局 ========= */
     :root{
@@ -1109,14 +1109,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
     }
   
 /* ===== 后台操作面板修正（固定不随页面滚动） ===== */
-.add-remove-controls{
-  position: fixed !important;
-  right: 20px;
-  top: 200px;
-  max-height: calc(100vh - 240px);
-  overflow-y: auto;
-  z-index: 2000;
-}
 
 
 /* ===== 描述输入框 + AI 按钮对齐修正 ===== */
@@ -1266,7 +1258,7 @@ body.dark-theme .admin-panel-hint{
   <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作:</div>
+      <div class="admin-panel-title">后台操作</div>
       <div class="admin-action">
         <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
@@ -2529,7 +2521,7 @@ body.dark-theme .admin-panel-hint{
       if(isLoggedIn){
         loginBtn.textContent = "退出登录";
         adminBtn.style.display = "inline-block";
-        adminBtn.textContent = isAdmin ? "离开设置" : "设置①";
+        adminBtn.textContent = isAdmin ? "离开设置③" : "设置①";
       }else{
         loginBtn.textContent = "登录";
         adminBtn.style.display = "none";
@@ -2591,7 +2583,7 @@ body.dark-theme .admin-panel-hint{
         addRemoveControls.style.display = "none";
         await reloadCardsAsAdmin();
         await customAlert("设置已保存", "设置完成");
-        logAction("离开设置");
+        logAction("离开设置③");
       }
 
       updateLoginButton();
