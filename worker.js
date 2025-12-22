@@ -240,11 +240,15 @@ export default {
       const userId = url.searchParams.get("userId") || SEED_USER_ID;
       const raw = await env.CARD_ORDER.get(userId, "json");
       const data = normalizeData(raw || SEED_DATA);
+      const _pad2 = (n) => String(n).padStart(2, "0");
+      const _now = new Date();
+      const _fileName = `${_now.getFullYear()}.${_pad2(_now.getMonth()+1)}.${_pad2(_now.getDate())}.${_pad2(_now.getHours())}.${_pad2(_now.getMinutes())}.${_pad2(_now.getSeconds())}.json`;
+
 
       return new Response(JSON.stringify(data, null, 2), {
         headers: {
           "content-type": "application/json; charset=UTF-8",
-          "content-disposition": 'attachment; filename="cardtab_export.json"'
+          "content-disposition": `attachment; filename="${_fileName}"`
         }
       });
     }
@@ -1258,7 +1262,8 @@ body.dark-theme .admin-panel-hint{
   <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作:后台操作：</div>  <div class="admin-action">
+      <div class="admin-panel-title">后台操作</div>
+      <div class="admin-action">
         <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
@@ -2915,6 +2920,13 @@ body.dark-theme .admin-panel-hint{
     }
 
     /* ================= 导出/导入（后台数据库） ================= */
+
+    function getExportFileName(){
+      const d = new Date();
+      const pad2 = (n)=>String(n).padStart(2,'0');
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}.${pad2(d.getHours())}.${pad2(d.getMinutes())}.${pad2(d.getSeconds())}.json`;
+    }
+
     async function exportData(){
       if(!await validateToken()) return;
       try{
@@ -2932,7 +2944,7 @@ body.dark-theme .admin-panel-hint{
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "cardtab_export.json";
+        a.download = getExportFileName();
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -3149,7 +3161,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
-<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作"></div>
+<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作:"></div>
 
 
 <script>
