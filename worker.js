@@ -1258,8 +1258,7 @@ body.dark-theme .admin-panel-hint{
   <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作</div>
-      <div class="admin-action">
+      <div class="admin-panel-title">后台操作:后台操作：</div>  <div class="admin-action">
         <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
