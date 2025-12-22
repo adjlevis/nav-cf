@@ -240,15 +240,11 @@ export default {
       const userId = url.searchParams.get("userId") || SEED_USER_ID;
       const raw = await env.CARD_ORDER.get(userId, "json");
       const data = normalizeData(raw || SEED_DATA);
-      const _pad2 = (n) => String(n).padStart(2, "0");
-      const _now = new Date();
-      const _fileName = `${_now.getFullYear()}.${_pad2(_now.getMonth()+1)}.${_pad2(_now.getDate())}.${_pad2(_now.getHours())}.${_pad2(_now.getMinutes())}.${_pad2(_now.getSeconds())}.json`;
-
 
       return new Response(JSON.stringify(data, null, 2), {
         headers: {
           "content-type": "application/json; charset=UTF-8",
-          "content-disposition": `attachment; filename="${_fileName}"`
+          "content-disposition": 'attachment; filename="cardtab_export.json"'
         }
       });
     }
@@ -283,7 +279,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nav-CF</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>"><text y=%22.9em%22 font-size=%2280%22>?</text></svg>">
   <style>
     /* ========= 全局 ========= */
     :root{
@@ -665,20 +661,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
       line-height:1.2;
     }
     body.dark-theme .admin-label{ color:#e5e7eb; }
-    /* 后台操作：文字在左，图标在右并对齐；图标更小 */
-    .add-remove-controls .admin-action{ gap:8px; }
-    .add-remove-controls .admin-action .admin-label{ flex:1; min-width:0; }
-    .add-remove-controls .admin-action .round-btn{
-      margin-left:auto;
-      width:34px;height:34px;
-      font-size:18px;
-      box-shadow:0 2px 8px rgba(0,0,0,.14);
-    }
-    .add-remove-controls .admin-action .round-btn svg{
-      width:18px !important;
-      height:18px !important;
-    }
-    .add-remove-controls .site-title-btn{ order:1; }
 .round-btn{
       background:var(--primary);
       color:#fff;border:none;border-radius:50%;
@@ -813,7 +795,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
 
     /* 卡片描述提示框（鼠标跟随） */
     #custom-tooltip{
-      position:absolute;display:none;z-index:700;
+      position:fixed;display:none;z-index:99999;
       background:var(--primary);color:#fff;
       padding:6px 10px;border-radius:5px;font-size:12px;
       pointer-events:none;max-width:300px;white-space:pre-wrap;
@@ -1113,6 +1095,14 @@ const HTML_CONTENT = `<!DOCTYPE html>
     }
   
 /* ===== 后台操作面板修正（固定不随页面滚动） ===== */
+.add-remove-controls{
+  position: fixed !important;
+  right: 20px;
+  top: 200px;
+  max-height: calc(100vh - 240px);
+  overflow-y: auto;
+  z-index: 2000;
+}
 
 
 /* ===== 描述输入框 + AI 按钮对齐修正 ===== */
@@ -1262,9 +1252,9 @@ body.dark-theme .admin-panel-hint{
   <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作:</div>
+      <div class="admin-panel-title">后台操作</div>
       <div class="admin-action">
-        <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
+        <button class="round-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
             <path d="M14 34l20-20 6 6-20 20H14v-6z" stroke="white" stroke-width="4" fill="none"/>
@@ -1899,6 +1889,23 @@ body.dark-theme .admin-panel-hint{
     function isValidUrl(url){
       try{ new URL(url); return true; }catch(e){ return false; }
     }
+function getIconCandidates(link){
+      const candidates = [];
+      const iconUrl = (link && typeof link.icon === "string") ? link.icon.trim() : "";
+      if(iconUrl && isValidUrl(iconUrl)) candidates.push(iconUrl);
+
+      const domain = extractDomain((link && link.url) ? link.url : "").replace(/^www\./, "");
+      if(domain){
+        // 平台1：Google（PNG）
+        candidates.push("https://www.google.com/s2/favicons?sz=64&domain=" + domain);
+        // 平台2：DuckDuckGo（ICO）
+        candidates.push("https://icons.duckduckgo.com/ip3/" + domain + ".ico");
+        // 平台3：FaviconExtractor（可能为ICO/PNG）
+        candidates.push("https://www.faviconextractor.com/favicon/" + domain);
+      }
+      return candidates;
+    }
+
 
     function createCard(link, container){
       const card = document.createElement("div");
@@ -1906,6 +1913,7 @@ body.dark-theme .admin-panel-hint{
       card.setAttribute("draggable", isAdmin);
       card.dataset.isPrivate = link.isPrivate;
       card.setAttribute("data-url", link.url);
+      if(link.tips) card.setAttribute("title", link.tips);
 
       const cardIndex = container.children.length;
       card.style.setProperty("--card-index", cardIndex);
@@ -1921,11 +1929,33 @@ body.dark-theme .admin-panel-hint{
 
       const icon = document.createElement("img");
       icon.className = "card-icon";
-      icon.src = (!link.icon || typeof link.icon !== "string" || !link.icon.trim() || !isValidUrl(link.icon))
-        ? "https://www.faviconextractor.com/favicon/" + extractDomain(link.url)
-        : link.icon;
       icon.alt = "Website Icon";
+      icon.referrerPolicy = "no-referrer";
+
+      // 多平台 favicon 自动回退（PNG/ICO/SVG 都支持：自定义 icon 优先）
+      const iconCandidates = getIconCandidates(link);
+      if(iconCandidates.length){
+        icon.dataset.iconIndex = "0";
+        icon.src = iconCandidates[0];
+      }else{
+        // 没有任何候选时，直接使用默认图标
+        const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        icon.src = svgUrl;
+        icon.onload = function(){ URL.revokeObjectURL(svgUrl); };
+      }
+
       icon.onerror = function(){
+        const idx = parseInt(this.dataset.iconIndex || "0", 10);
+        const next = (isNaN(idx) ? 0 : idx) + 1;
+
+        if(iconCandidates && next < iconCandidates.length){
+          this.dataset.iconIndex = String(next);
+          this.src = iconCandidates[next];
+          return;
+        }
+
+        // 全部失败：回退默认 SVG
         const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
         const svgUrl = URL.createObjectURL(svgBlob);
         this.src = svgUrl;
@@ -2525,7 +2555,7 @@ body.dark-theme .admin-panel-hint{
       if(isLoggedIn){
         loginBtn.textContent = "退出登录";
         adminBtn.style.display = "inline-block";
-        adminBtn.textContent = isAdmin ? "离开设置③" : "设置①";
+        adminBtn.textContent = isAdmin ? "离开设置" : "设置①";
       }else{
         loginBtn.textContent = "登录";
         adminBtn.style.display = "none";
@@ -2587,7 +2617,7 @@ body.dark-theme .admin-panel-hint{
         addRemoveControls.style.display = "none";
         await reloadCardsAsAdmin();
         await customAlert("设置已保存", "设置完成");
-        logAction("离开设置③");
+        logAction("离开设置");
       }
 
       updateLoginButton();
@@ -2615,29 +2645,39 @@ body.dark-theme .admin-panel-hint{
     /* ================= Tooltip（卡片tips） ================= */
     function handleTooltipMouseMove(e, tips, adminMode){
       const tooltip = document.getElementById("custom-tooltip");
+      if(!tooltip) return;
+
       if(!tips || adminMode){
         tooltip.style.display = "none";
         return;
       }
+
       if(tooltip.textContent !== tips) tooltip.textContent = tips;
       tooltip.style.display = "block";
 
       const offsetX = 15, offsetY = 10;
+
+      // Use viewport coordinates so it works reliably with fixed headers / scrolling.
       const rect = tooltip.getBoundingClientRect();
       const pageWidth = window.innerWidth;
       const pageHeight = window.innerHeight;
 
-      let left = e.pageX + offsetX;
-      let top = e.pageY + offsetY;
+      const cx = (typeof e.clientX === "number") ? e.clientX : 0;
+      const cy = (typeof e.clientY === "number") ? e.clientY : 0;
 
-      if(pageWidth - e.clientX < 200) left = e.pageX - rect.width - offsetX;
-      if(pageHeight - e.clientY < 100) top = e.pageY - rect.height - offsetY;
+      let left = cx + offsetX;
+      let top = cy + offsetY;
+
+      // Keep tooltip within viewport
+      if(pageWidth - cx < 200) left = cx - rect.width - offsetX;
+      if(pageHeight - cy < 100) top = cy - rect.height - offsetY;
 
       tooltip.style.left = left + "px";
       tooltip.style.top = top + "px";
     }
     function handleTooltipMouseLeave(){
-      document.getElementById("custom-tooltip").style.display = "none";
+      const tooltip = document.getElementById("custom-tooltip");
+      if(tooltip) tooltip.style.display = "none";
     }
 
     /* ================= 书签搜索 ================= */
@@ -2920,13 +2960,6 @@ body.dark-theme .admin-panel-hint{
     }
 
     /* ================= 导出/导入（后台数据库） ================= */
-
-    function getExportFileName(){
-      const d = new Date();
-      const pad2 = (n)=>String(n).padStart(2,'0');
-      return d.getFullYear()+"."+pad2(d.getMonth()+1)+"."+pad2(d.getDate())+"."+pad2(d.getHours())+"."+pad2(d.getMinutes())+"."+pad2(d.getSeconds())+".json";
-    }
-
     async function exportData(){
       if(!await validateToken()) return;
       try{
@@ -2944,7 +2977,7 @@ body.dark-theme .admin-panel-hint{
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = getExportFileName();
+        a.download = "cardtab_export.json";
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -3161,7 +3194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
-<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作:"></div>
+<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作"></div>
 
 
 <script>
