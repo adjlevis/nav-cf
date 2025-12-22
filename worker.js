@@ -405,7 +405,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
       background-color:var(--primary);
       color:#fff;border:none;border-radius:4px;
       padding:8px 16px;font-size:13px;
-      cursor:pointer;transition:all .3s ease;
+      cursor:pointer;transition:transform .14s cubic-bezier(.2,.8,.2,1), box-shadow .18s ease, border-color .18s ease;will-change:transform, box-shadow;
       font-weight:500;
     }
     .admin-btn:hover,.login-btn:hover{
@@ -543,7 +543,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
       background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="currentColor" d="M0 0l6 6 6-6z"/></svg>');
       background-repeat:no-repeat;
       background-position:right 10px center;
-      cursor:pointer;transition:all .3s ease;
+      cursor:pointer;transition:transform .14s cubic-bezier(.2,.8,.2,1), box-shadow .18s ease, border-color .18s ease;will-change:transform, box-shadow;
       border-radius:0;
     }
     select option{
@@ -653,7 +653,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
       align-items:center;
       gap:10px;
     }
-    .admin-label{
+        .admin-action-right{ width:100%; justify-content:space-between; }
+    .admin-action-right .admin-label{ flex:1; }
+.admin-label{
       font-size:13px;
       font-weight:600;
       color:#1f2937;
@@ -743,7 +745,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
       background:#fff;border-radius:8px;
       padding:12px;width:150px;
       box-shadow:0 3px 10px rgba(0,0,0,.06);
-      cursor:pointer;transition:all .3s ease;
+      cursor:pointer;transition:transform .14s cubic-bezier(.2,.8,.2,1), box-shadow .18s ease, border-color .18s ease;will-change:transform, box-shadow;
       position:relative;user-select:none;
       border-left:3px solid var(--primary);
       animation:fadeIn .3s ease forwards;
@@ -795,10 +797,10 @@ const HTML_CONTENT = `<!DOCTYPE html>
 
     /* 卡片描述提示框（鼠标跟随） */
     #custom-tooltip{
-      position:absolute;display:none;z-index:700;
+      position:fixed;display:none;z-index:99999;
       background:var(--primary);color:#fff;
       padding:6px 10px;border-radius:5px;font-size:12px;
-      pointer-events:none;max-width:300px;white-space:pre-wrap;
+      pointer-events:none;max-width:300px;white-space:pre-wrap;will-change:transform;transform:translate3d(0,0,0);
       box-shadow:0 2px 10px rgba(0,0,0,.2);
       transition:opacity .2s ease;
     }
@@ -1199,6 +1201,12 @@ body.dark-theme .admin-panel-hint{
   background:#fff;
   color:#111;
 }
+
+/* 未登录时隐藏右侧后台拉出按钮与提示；登录后显示 */
+.admin-panel-handle, .admin-panel-hint{ display:none; }
+body.logged-in .admin-panel-handle{ display:block; }
+body.logged-in .admin-panel-hint{ display:inline-block; }
+
 </style>
 </head>
 <body>
@@ -1253,14 +1261,14 @@ body.dark-theme .admin-panel-hint{
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
       <div class="admin-panel-title">后台操作</div>
-      <div class="admin-action">
+      <div class="admin-action admin-action-right">
+        <span class="admin-label">0.修改站点名称</span>
         <button class="round-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
             <path d="M14 34l20-20 6 6-20 20H14v-6z" stroke="white" stroke-width="4" fill="none"/>
           </svg>
         </button>
-        <span class="admin-label">0.修改站点名称</span>
       </div>
 
 
@@ -1327,30 +1335,7 @@ body.dark-theme .admin-panel-hint{
         <span class="admin-label">6.导入数据（覆盖恢复）</span>
       </div>
 
-      <div class="admin-action">
-        <button class="round-btn export-bookmarks-btn" onclick="exportBookmarks()" title="导出书签（HTML）">
-          <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 6h24v36l-12-8-12 8V6z" stroke="white" stroke-width="4" fill="none" stroke-linejoin="round"/>
-            <path d="M24 12v14" stroke="white" stroke-width="4" stroke-linecap="round"/>
-            <path d="M18 22l6 6 6-6" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </button>
-        <span class="admin-label">7.导出书签（HTML）</span>
-      </div>
-
-      <div class="admin-action">
-        <button class="round-btn import-bookmarks-btn" onclick="triggerBookmarkImport()" title="导入书签（HTML 合并分类）">
-          <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 6h24v36l-12-8-12 8V6z" stroke="white" stroke-width="4" fill="none" stroke-linejoin="round"/>
-            <path d="M24 36V22" stroke="white" stroke-width="4" stroke-linecap="round"/>
-            <path d="M18 28l6-6 6 6" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </button>
-        <span class="admin-label">8.导入书签（HTML 合并归类）</span>
-      </div>
-
       <input type="file" id="import-file" accept="application/json" style="display:none;" />
-      <input type="file" id="bookmark-import-file" accept=".html,.htm,text/html" style="display:none;" />
     </div>
 <!-- 分类和卡片容器 -->
     <div id="sections-container"></div>
@@ -1919,6 +1904,7 @@ body.dark-theme .admin-panel-hint{
       card.setAttribute("draggable", isAdmin);
       card.dataset.isPrivate = link.isPrivate;
       card.setAttribute("data-url", link.url);
+      if(link.tips) card.setAttribute("title", link.tips);
 
       const cardIndex = container.children.length;
       card.style.setProperty("--card-index", cardIndex);
@@ -2015,10 +2001,20 @@ body.dark-theme .admin-panel-hint{
       cardActions.appendChild(deleteBtn);
       card.appendChild(cardActions);
 
-      // Hover tooltip: show full bookmark description (link.tips)
-      card.addEventListener("mouseenter", function(e){ handleTooltipMouseMove(e, link.tips, isAdmin); });
-      card.addEventListener("mousemove", function(e){ handleTooltipMouseMove(e, link.tips, isAdmin); });
-      card.addEventListener("mouseleave", handleTooltipMouseLeave);
+
+// Hover tooltip: smoother & more responsive
+const __tipText = link.tips || "";
+const __onTipMove = function(e){ handleTooltipMouseMove(e, __tipText, isAdmin); };
+if(window.PointerEvent){
+  card.addEventListener("pointerenter", __onTipMove);
+  card.addEventListener("pointermove", __onTipMove);
+  card.addEventListener("pointerleave", handleTooltipMouseLeave);
+}else{
+  card.addEventListener("mouseenter", __onTipMove);
+  card.addEventListener("mousemove", __onTipMove);
+  card.addEventListener("mouseleave", handleTooltipMouseLeave);
+}
+
 
       card.addEventListener("dragstart", dragStart);
       card.addEventListener("dragover", dragOver);
@@ -2535,13 +2531,26 @@ body.dark-theme .admin-panel-hint{
     function updateLoginButton(){
       const loginBtn = document.getElementById("login-btn");
       const adminBtn = document.getElementById("admin-btn");
+
+      // 右侧后台拉出按钮 & 提示（仅登录后显示）
+      const handle = document.querySelector(".admin-panel-handle");
+      const hint = document.querySelector(".admin-panel-hint");
+
       if(isLoggedIn){
         loginBtn.textContent = "退出登录";
         adminBtn.style.display = "inline-block";
-        adminBtn.textContent = isAdmin ? "离开设置" : "设置";
+        adminBtn.textContent = isAdmin ? "离开设置" : "设置①";
+
+        document.body.classList.add("logged-in");
+        if(handle) handle.style.display = "block";
+        if(hint) hint.style.display = "inline-block";
       }else{
         loginBtn.textContent = "登录";
         adminBtn.style.display = "none";
+
+        document.body.classList.remove("logged-in");
+        if(handle) handle.style.display = "none";
+        if(hint) hint.style.display = "none";
       }
     }
 
@@ -2625,33 +2634,76 @@ body.dark-theme .admin-panel-hint{
     }
     window.addEventListener("scroll", handleBackToTopVisibility);
 
-    /* ================= Tooltip（卡片tips） ================= */
-    function handleTooltipMouseMove(e, tips, adminMode){
-      const tooltip = document.getElementById("custom-tooltip");
-      if(!tips || adminMode){
-        tooltip.style.display = "none";
-        return;
-      }
-      if(tooltip.textContent !== tips) tooltip.textContent = tips;
-      tooltip.style.display = "block";
+    
+/* ================= Tooltip（卡片tips） ================= */
+let __tooltipRAF = 0;
+const __tooltipState = { x: 0, y: 0, tips: "", adminMode: false };
 
-      const offsetX = 15, offsetY = 10;
-      const rect = tooltip.getBoundingClientRect();
-      const pageWidth = window.innerWidth;
-      const pageHeight = window.innerHeight;
+function __renderTooltip(){
+  __tooltipRAF = 0;
+  const tooltip = document.getElementById("custom-tooltip");
+  if(!tooltip) return;
 
-      let left = e.pageX + offsetX;
-      let top = e.pageY + offsetY;
+  const tips = __tooltipState.tips;
+  const adminMode = __tooltipState.adminMode;
 
-      if(pageWidth - e.clientX < 200) left = e.pageX - rect.width - offsetX;
-      if(pageHeight - e.clientY < 100) top = e.pageY - rect.height - offsetY;
+  if(!tips || adminMode){
+    tooltip.style.display = "none";
+    return;
+  }
 
-      tooltip.style.left = left + "px";
-      tooltip.style.top = top + "px";
-    }
-    function handleTooltipMouseLeave(){
-      document.getElementById("custom-tooltip").style.display = "none";
-    }
+  if(tooltip.textContent !== tips) tooltip.textContent = tips;
+  if(tooltip.style.display !== "block") tooltip.style.display = "block";
+
+  const offsetX = 14, offsetY = 10;
+  const x = __tooltipState.x;
+  const y = __tooltipState.y;
+
+  // Use transform for smoother updates (less layout thrash than left/top).
+  const w = tooltip.offsetWidth || 0;
+  const h = tooltip.offsetHeight || 0;
+
+  let left = x + offsetX;
+  let top = y + offsetY;
+
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // Keep tooltip within viewport with a small padding
+  const pad = 8;
+  if(left + w + pad > vw) left = x - w - offsetX;
+  if(top + h + pad > vh) top = y - h - offsetY;
+
+  // Clamp
+  if(left < pad) left = pad;
+  if(top < pad) top = pad;
+
+  tooltip.style.transform = "translate3d(" + left + "px," + top + "px,0)";
+}
+
+function handleTooltipMouseMove(e, tips, adminMode){
+  const tooltip = document.getElementById("custom-tooltip");
+  if(!tooltip) return;
+
+  __tooltipState.tips = tips || "";
+  __tooltipState.adminMode = !!adminMode;
+
+  // clientX/Y works with fixed positioning & scrolling.
+  __tooltipState.x = (typeof e.clientX === "number") ? e.clientX : 0;
+  __tooltipState.y = (typeof e.clientY === "number") ? e.clientY : 0;
+
+  if(__tooltipRAF) return;
+  __tooltipRAF = requestAnimationFrame(__renderTooltip);
+}
+
+function handleTooltipMouseLeave(){
+  __tooltipState.tips = "";
+  __tooltipState.adminMode = false;
+
+  const tooltip = document.getElementById("custom-tooltip");
+  if(tooltip) tooltip.style.display = "none";
+}
+
 
     /* ================= 书签搜索 ================= */
     function searchBookmarks(query){
@@ -3012,302 +3064,6 @@ body.dark-theme .admin-panel-hint{
       }
     });
 
-    /* ================= 浏览器书签 导出/导入（HTML） ================= */
-    function _escapeHtml(str){
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    function _normalizeUrlForDedupe(u){
-      try{
-        const url = new URL(String(u || "").trim());
-        // canonical: origin + path(no trailing slash unless root) + search
-        let path = url.pathname || "/";
-        if(path.length > 1) path = path.replace(/\/+$/,"");
-        return (url.origin + path + (url.search || "")).toLowerCase();
-      }catch{
-        return String(u || "").trim().toLowerCase();
-      }
-    }
-
-    function _cleanDomainClient(hostname){
-      return String(hostname || "")
-        .replace(/^www\./i, "")
-        .replace(/^cn\./i, "")
-        .split(".")[0]
-        .toLowerCase();
-    }
-
-    function _extractHostname(u){
-      try{ return new URL(String(u || "").trim()).hostname; }catch{ return ""; }
-    }
-
-    function _buildBookmarksHTML(data){
-      const d = data && typeof data === "object" ? data : { links: [], categories: {} };
-      const cats = (d.categories && typeof d.categories === "object") ? d.categories : {};
-      const catNames = Object.keys(cats);
-      const byCat = {};
-      for(const c of catNames){
-        const arr = Array.isArray(cats[c]) ? cats[c] : [];
-        byCat[c] = arr.filter(Boolean);
-      }
-
-      // Fallback: if categories empty, group by link.category
-      if(catNames.length === 0){
-        for(const l of (Array.isArray(d.links)? d.links: [])){
-          const c = (l && l.category) ? l.category : "常用";
-          if(!byCat[c]) byCat[c] = [];
-          byCat[c].push(l);
-        }
-      }
-
-      const now = Math.floor(Date.now()/1000);
-      let html = '';
-      html += '<!DOCTYPE NETSCAPE-Bookmark-file-1>\n';
-      html += '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n';
-      html += '<TITLE>Bookmarks</TITLE>\n';
-      html += '<H1>Bookmarks</H1>\n';
-      html += '<DL><p>\n';
-
-      const finalCats = Object.keys(byCat);
-      for(const cat of finalCats){
-        html += '  <DT><H3 ADD_DATE="' + now + '">' + _escapeHtml(cat) + '</H3>\n';
-html += '  <DL><p>\n';
-        for(const link of (byCat[cat] || [])){
-          if(!link || !link.url) continue;
-          const name = _escapeHtml(link.name || link.url);
-          const url = _escapeHtml(link.url);
-          const tips = (link.tips || "").trim();
-          const iconAttr = (link.icon && typeof link.icon === "string" && link.icon.trim()) ? ' ICON_URI="' + _escapeHtml(link.icon.trim()) + '"': "";
-html += '    <DT><A HREF="' + url + '"' + iconAttr + ' ADD_DATE="' + now + '">' + name + '</A>\n';
-if(tips) html += '    <DD>' + _escapeHtml(tips) + '\n';
-}
-        html += '  </DL><p>\n';
-      }
-      html += '</DL><p>\n';
-      return html;
-    }
-
-    function _parseBrowserBookmarksHTML(htmlText){
-      const doc = new DOMParser().parseFromString(String(htmlText || ""), "text/html");
-      const rootDL = doc.querySelector("dl");
-      const items = [];
-
-      function walk(dl, folderName){
-        if(!dl) return;
-        const children = Array.from(dl.children || []);
-        for(let i=0;i<children.length;i++){
-          const el = children[i];
-          if(!el || !el.tagName) continue;
-
-          if(el.tagName.toUpperCase() === "DT"){
-            const h3 = el.querySelector("h3");
-            const a = el.querySelector("a");
-            if(h3){
-              const next = children[i+1];
-              const subDL = (next && next.tagName && next.tagName.toUpperCase() === "DL") ? next : el.querySelector("dl");
-              const folder = (h3.textContent || "").trim() || folderName;
-              walk(subDL, folder);
-            }else if(a){
-              const url = (a.getAttribute("href") || "").trim();
-              if(!url) continue;
-              const title = (a.textContent || "").trim() || url;
-              // DD often follows DT
-              let dd = children[i+1];
-              let desc = "";
-              if(dd && dd.tagName && dd.tagName.toUpperCase() === "DD") desc = (dd.textContent || "").trim();
-              const icon = (a.getAttribute("icon_uri") || a.getAttribute("icon") || "").trim();
-              items.push({ name: title, url, tips: desc, folder: folderName, icon });
-            }
-          }else if(el.tagName.toUpperCase() === "DL"){
-            walk(el, folderName);
-          }
-        }
-      }
-
-      walk(rootDL, "常用");
-      return items;
-    }
-
-    function _resolveCategoryForImport(item, existingCategoryNames, domainToCategory){
-      const defaultCat = existingCategoryNames.includes("常用") ? "常用" : (existingCategoryNames[0] || "常用");
-
-      const host = _extractHostname(item.url);
-      const d = _cleanDomainClient(host);
-      if(d && domainToCategory[d]) return domainToCategory[d];
-
-      // Folder name mapping: exact / normalized / substring
-      const folder = String(item.folder || "").trim();
-      if(folder){
-        const norm = folder.replace(/\s+/g,"").toLowerCase();
-        for(const c of existingCategoryNames){
-          if(c === folder) return c;
-        }
-        for(const c of existingCategoryNames){
-          const cn = String(c).replace(/\s+/g,"").toLowerCase();
-          if(cn && (cn === norm || cn.includes(norm) || norm.includes(cn))) return c;
-        }
-      }
-      return defaultCat;
-    }
-
-    async function exportBookmarks(){
-      if(!await validateToken()) return;
-      try{
-        showLoading("正在导出书签...");
-        const res = await fetch("/api/getLinks?userId=testUser", {
-          method:"GET",
-          headers:{ "Authorization": localStorage.getItem("authToken") }
-        });
-        if(!res.ok){
-          hideLoading();
-          await customAlert("导出书签失败，请重试", "导出书签");
-          return;
-        }
-        const data = await res.json();
-        const html = _buildBookmarksHTML(data);
-        const blob = new Blob([html], { type:"text/html;charset=UTF-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "nav_bookmarks_export.html";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        hideLoading();
-        await customAlert("已导出为 HTML 书签文件", "导出书签");
-      }catch(e){
-        hideLoading();
-        console.error(e);
-        await customAlert("导出书签失败：" + (e && e.message ? e.message : e), "导出书签");
-      }
-    }
-
-    function triggerBookmarkImport(){
-      const input = document.getElementById("bookmark-import-file");
-      if(!input) return;
-      input.value = "";
-      input.click();
-    }
-
-    document.getElementById("bookmark-import-file").addEventListener("change", async function(e){
-      const file = e.target.files && e.target.files[0];
-      if(!file) return;
-      if(!await validateToken()) return;
-
-      const confirmed = await customConfirm(
-        "导入会把浏览器书签合并到现有数据，并按已有分类自动归类（不会覆盖原数据），继续吗？",
-        "继续导入",
-        "取消"
-      );
-      if(!confirmed) return;
-
-      try{
-        showLoading("正在解析书签...");
-        const htmlText = await file.text();
-        const imported = _parseBrowserBookmarksHTML(htmlText);
-        if(!imported.length){
-          hideLoading();
-          await customAlert("没有解析到任何书签（请确认上传的是浏览器导出的书签 HTML）", "导入书签");
-          return;
-        }
-
-        showLoading("正在获取当前数据...");
-        const res = await fetch("/api/getLinks?userId=testUser", {
-          method:"GET",
-          headers:{ "Authorization": localStorage.getItem("authToken") }
-        });
-        if(!res.ok){
-          hideLoading();
-          await customAlert("获取当前数据失败，请重试", "导入书签");
-          return;
-        }
-        const data = await res.json();
-        data.links = Array.isArray(data.links) ? data.links : [];
-        data.categories = (data.categories && typeof data.categories === "object") ? data.categories : {};
-
-        const existingCategoryNames = Object.keys(data.categories);
-        const defaultCat = existingCategoryNames.includes("常用") ? "常用" : (existingCategoryNames[0] || "常用");
-        if(!data.categories[defaultCat]) data.categories[defaultCat] = Array.isArray(data.categories[defaultCat]) ? data.categories[defaultCat] : [];
-
-        // Build domain->category map from existing database
-        const domainToCategory = {};
-        for(const c of Object.keys(data.categories)){
-          const arr = Array.isArray(data.categories[c]) ? data.categories[c] : [];
-          for(const l of arr){
-            if(!l || !l.url) continue;
-            const host = _extractHostname(l.url);
-            const d = _cleanDomainClient(host);
-            if(d && !domainToCategory[d]) domainToCategory[d] = c;
-          }
-        }
-
-        // Dedup by URL
-        const urlSet = new Set(data.links.map(l => _normalizeUrlForDedupe(l && l.url)));
-
-        let added = 0;
-        for(const item of imported){
-          const normUrl = _normalizeUrlForDedupe(item.url);
-          if(!normUrl || urlSet.has(normUrl)) continue;
-
-          const cat = _resolveCategoryForImport(item, existingCategoryNames, domainToCategory);
-          const finalCat = data.categories[cat] ? cat : defaultCat;
-
-          const link = {
-            name: (item.name || "").trim() || item.url,
-            url: (item.url || "").trim(),
-            tips: (item.tips || "").trim(),
-            icon: (item.icon && typeof item.icon === "string" && item.icon.trim().length < 5120) ? item.icon.trim() : "",
-            category: finalCat,
-            isPrivate: false
-          };
-
-          data.links.push(link);
-          if(!Array.isArray(data.categories[finalCat])) data.categories[finalCat] = [];
-          data.categories[finalCat].push(link);
-
-          urlSet.add(normUrl);
-          added++;
-        }
-
-        if(added === 0){
-          hideLoading();
-          await customAlert("没有新增书签（可能都已存在）", "导入书签");
-          return;
-        }
-
-        showLoading("正在保存到数据库...");
-        const saveRes = await fetch("/api/importData", {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json",
-            "Authorization": localStorage.getItem("authToken")
-          },
-          body: JSON.stringify({ userId:"testUser", data })
-        });
-
-        if(!saveRes.ok){
-          hideLoading();
-          await customAlert("保存失败，请重试", "导入书签");
-          return;
-        }
-
-        hideLoading();
-        await loadLinks();
-        renderSections();
-        await customAlert("导入完成：新增 " + added + " 条书签", "导入书签");
-      }catch(err){
-        hideLoading();
-        console.error(err);
-        await customAlert("导入失败：" + (err && err.message ? err.message : err), "导入书签");
-      }
-    });
-
     /* ================= 初始化 ================= */
     document.addEventListener("DOMContentLoaded", async function(){
       try{
@@ -3463,7 +3219,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
-<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作"></div>
+<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作" style="display:none;"></div>
 
 
 <script>
@@ -3475,7 +3231,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const hint = document.createElement("span");
   hint.className = "admin-panel-hint";
-  hint.textContent = "点我";
+  hint.textContent = "点我②";
 
   document.body.appendChild(hint);
 
