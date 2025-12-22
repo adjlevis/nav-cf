@@ -1262,7 +1262,7 @@ body.dark-theme .admin-panel-hint{
   <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作</div>
+      <div class="admin-panel-title">后台操作:</div>
       <div class="admin-action">
         <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
@@ -2924,7 +2924,7 @@ body.dark-theme .admin-panel-hint{
     function getExportFileName(){
       const d = new Date();
       const pad2 = (n)=>String(n).padStart(2,'0');
-      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}.${pad2(d.getHours())}.${pad2(d.getMinutes())}.${pad2(d.getSeconds())}.json`;
+      return d.getFullYear()+"."+pad2(d.getMonth()+1)+"."+pad2(d.getDate())+"."+pad2(d.getHours())+"."+pad2(d.getMinutes())+"."+pad2(d.getSeconds())+".json";
     }
 
     async function exportData(){
