@@ -3075,17 +3075,17 @@ body.dark-theme .admin-panel-hint{
 
       const finalCats = Object.keys(byCat);
       for(const cat of finalCats){
-        html += `  <DT><H3 ADD_DATE="${now}">${_escapeHtml(cat)}</H3>\n`;
-        html += '  <DL><p>\n';
+        html += '  <DT><H3 ADD_DATE="' + now + '">' + _escapeHtml(cat) + '</H3>\n';
+html += '  <DL><p>\n';
         for(const link of (byCat[cat] || [])){
           if(!link || !link.url) continue;
           const name = _escapeHtml(link.name || link.url);
           const url = _escapeHtml(link.url);
           const tips = (link.tips || "").trim();
-          const iconAttr = (link.icon && typeof link.icon === "string" && link.icon.trim()) ? ` ICON_URI="${_escapeHtml(link.icon.trim())}"` : "";
-          html += `    <DT><A HREF="${url}"${iconAttr} ADD_DATE="${now}">${name}</A>\n`;
-          if(tips) html += `    <DD>${_escapeHtml(tips)}\n`;
-        }
+          const iconAttr = (link.icon && typeof link.icon === "string" && link.icon.trim()) ? ' ICON_URI="' + _escapeHtml(link.icon.trim()) + '"': "";
+html += '    <DT><A HREF="' + url + '"' + iconAttr + ' ADD_DATE="' + now + '">' + name + '</A>\n';
+if(tips) html += '    <DD>' + _escapeHtml(tips) + '\n';
+}
         html += '  </DL><p>\n';
       }
       html += '</DL><p>\n';
