@@ -240,11 +240,15 @@ export default {
       const userId = url.searchParams.get("userId") || SEED_USER_ID;
       const raw = await env.CARD_ORDER.get(userId, "json");
       const data = normalizeData(raw || SEED_DATA);
+      const _pad2 = (n) => String(n).padStart(2, "0");
+      const _now = new Date();
+      const _fileName = `${_now.getFullYear()}.${_pad2(_now.getMonth()+1)}.${_pad2(_now.getDate())}.${_pad2(_now.getHours())}.${_pad2(_now.getMinutes())}.${_pad2(_now.getSeconds())}.json`;
+
 
       return new Response(JSON.stringify(data, null, 2), {
         headers: {
           "content-type": "application/json; charset=UTF-8",
-          "content-disposition": 'attachment; filename="cardtab_export.json"'
+          "content-disposition": `attachment; filename="${_fileName}"`
         }
       });
     }
@@ -279,7 +283,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nav-CF</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>"><text y=%22.9em%22 font-size=%2280%22>?</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2215%22 y=%2220%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2225%22 y=%2240%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/><rect x=%2235%22 y=%2260%22 width=%2255%22 height=%2210%22 rx=%225%22 fill=%22black%22/></svg>">
   <style>
     /* ========= 全局 ========= */
     :root{
@@ -661,6 +665,20 @@ const HTML_CONTENT = `<!DOCTYPE html>
       line-height:1.2;
     }
     body.dark-theme .admin-label{ color:#e5e7eb; }
+    /* 后台操作：文字在左，图标在右并对齐；图标更小 */
+    .add-remove-controls .admin-action{ gap:8px; }
+    .add-remove-controls .admin-action .admin-label{ flex:1; min-width:0; }
+    .add-remove-controls .admin-action .round-btn{
+      margin-left:auto;
+      width:34px;height:34px;
+      font-size:18px;
+      box-shadow:0 2px 8px rgba(0,0,0,.14);
+    }
+    .add-remove-controls .admin-action .round-btn svg{
+      width:18px !important;
+      height:18px !important;
+    }
+    .add-remove-controls .site-title-btn{ order:1; }
 .round-btn{
       background:var(--primary);
       color:#fff;border:none;border-radius:50%;
@@ -795,7 +813,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
 
     /* 卡片描述提示框（鼠标跟随） */
     #custom-tooltip{
-      position:fixed;display:none;z-index:99999;
+      position:absolute;display:none;z-index:700;
       background:var(--primary);color:#fff;
       padding:6px 10px;border-radius:5px;font-size:12px;
       pointer-events:none;max-width:300px;white-space:pre-wrap;
@@ -1095,14 +1113,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
     }
   
 /* ===== 后台操作面板修正（固定不随页面滚动） ===== */
-.add-remove-controls{
-  position: fixed !important;
-  right: 20px;
-  top: 200px;
-  max-height: calc(100vh - 240px);
-  overflow-y: auto;
-  z-index: 2000;
-}
 
 
 /* ===== 描述输入框 + AI 按钮对齐修正 ===== */
@@ -1252,9 +1262,9 @@ body.dark-theme .admin-panel-hint{
   <div class="content">
     <!-- 管理控制按钮 -->
     <div class="add-remove-controls">
-      <div class="admin-panel-title">后台操作</div>
+      <div class="admin-panel-title">后台操作:</div>
       <div class="admin-action">
-        <button class="round-btn" onclick="editSiteTitle()" title="修改站点名称">
+        <button class="round-btn site-title-btn" onclick="editSiteTitle()" title="修改站点名称">
           <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 42h36" stroke="white" stroke-width="4"/>
             <path d="M14 34l20-20 6 6-20 20H14v-6z" stroke="white" stroke-width="4" fill="none"/>
@@ -1890,13 +1900,53 @@ body.dark-theme .admin-panel-hint{
       try{ new URL(url); return true; }catch(e){ return false; }
     }
 
+
+    function getIconChoiceKey(link){
+      const u = (link && link.url) ? String(link.url) : "";
+      // 使用 URL 作为稳定 key，避免改数据结构
+      return "navcf:iconChoice:" + u;
+    }
+    function readIconChoice(link){
+      try{
+        const k = getIconChoiceKey(link);
+        const v = localStorage.getItem(k);
+        if(v === null || v === undefined || v === "") return null;
+        const n = parseInt(v, 10);
+        return Number.isFinite(n) ? n : null;
+      }catch(e){
+        return null;
+      }
+    }
+    function writeIconChoice(link, idx){
+      try{
+        const k = getIconChoiceKey(link);
+        localStorage.setItem(k, String(idx));
+      }catch(e){}
+    }
+    function getIconCandidates(link){
+      const candidates = [];
+      const iconUrl = (link && typeof link.icon === "string") ? link.icon.trim() : "";
+      // 自定义 icon（支持 png/ico/svg）优先
+      if(iconUrl && isValidUrl(iconUrl)) candidates.push(iconUrl);
+
+      const domain = extractDomain((link && link.url) ? link.url : "").replace(/^www\./, "");
+      if(domain){
+        // 平台1：Google favicon（PNG）
+        candidates.push("https://www.google.com/s2/favicons?sz=64&domain=" + domain);
+        // 平台2：DuckDuckGo favicon（ICO）
+        candidates.push("https://icons.duckduckgo.com/ip3/" + domain + ".ico");
+        // 平台3：FaviconExtractor（ICO/PNG）
+        candidates.push("https://www.faviconextractor.com/favicon/" + domain);
+      }
+      return candidates;
+    }
+
     function createCard(link, container){
       const card = document.createElement("div");
       card.className = "card";
       card.setAttribute("draggable", isAdmin);
       card.dataset.isPrivate = link.isPrivate;
       card.setAttribute("data-url", link.url);
-      if(link.tips) card.setAttribute("title", link.tips);
 
       const cardIndex = container.children.length;
       card.style.setProperty("--card-index", cardIndex);
@@ -1910,60 +1960,63 @@ body.dark-theme .admin-panel-hint{
         '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>' +
         '</svg>';
 
-      const icon = document.createElement("img");
-      icon.className = "card-icon";
+            const icon = document.createElement("img");
+            icon.className = "card-icon";
+            icon.alt = "Website Icon";
+            icon.referrerPolicy = "no-referrer";
 
-      // === Multi-source favicon with auto-fallback + click-to-cycle (no data structure changes) ===
-      const _domain = extractDomain(link.url);
-      const _candidates = [];
-      if (link.icon && typeof link.icon === "string" && link.icon.trim() && isValidUrl(link.icon.trim())) {
-        _candidates.push(link.icon.trim()); // custom icon (ico/png/svg)
-      }
-      // Platform 1: Google favicon (png)
-      _candidates.push("https://www.google.com/s2/favicons?sz=64&domain=" + _domain);
-      // Platform 2: DuckDuckGo (ico)
-      _candidates.push("https://icons.duckduckgo.com/ip3/" + _domain + ".ico");
-      // Platform 3: FaviconExtractor (ico/png)
-      _candidates.push("https://www.faviconextractor.com/favicon/" + _domain);
+            // 多平台 favicon 自动回退（PNG/ICO/SVG 都支持：自定义 icon 优先）
+            const iconCandidates = getIconCandidates(link);
 
-      const _prefKey = "navcf_icon_pref::" + link.url;
-      let _idx = parseInt(localStorage.getItem(_prefKey) || "0", 10);
-      if (isNaN(_idx) || _idx < 0 || _idx >= _candidates.length) _idx = 0;
+            // 记住用户“手动切换到的来源”（localStorage，不改数据结构）
+            const prefIdx = readIconChoice(link);
+            const startIdx = (prefIdx !== null && prefIdx >= 0 && prefIdx < iconCandidates.length) ? prefIdx : 0;
 
-      function _setIconByIndex(i){
-        _idx = i;
-        icon.dataset.iconIndex = String(i);
-        icon.src = _candidates[i];
-      }
+            if(iconCandidates.length){
+              icon.dataset.iconIndex = String(startIdx);
+              icon.src = iconCandidates[startIdx];
+            }else{
+              // 没有任何候选时，直接使用默认图标
+              const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
+              const svgUrl = URL.createObjectURL(svgBlob);
+              icon.src = svgUrl;
+              icon.onload = function(){ URL.revokeObjectURL(svgUrl); };
+            }
 
-      _setIconByIndex(_idx);
-      icon.alt = "Website Icon";
+            icon.onerror = function(){
+              const idx = parseInt(this.dataset.iconIndex || "0", 10);
+              const next = (isNaN(idx) ? 0 : idx) + 1;
 
-      // Auto fallback when a source fails to load
-      icon.onerror = function(){
-        const cur = parseInt(icon.dataset.iconIndex || "0", 10);
-        if (cur < _candidates.length - 1) {
-          _setIconByIndex(cur + 1);
-          return;
-        }
-        // All failed -> default SVG icon
-        const svgBlob = new Blob([defaultIconSVG], { type:"image/svg+xml" });
-        const svgUrl = URL.createObjectURL(svgBlob);
-        this.src = svgUrl;
-        this.onload = function(){ URL.revokeObjectURL(svgUrl); };
+              if(iconCandidates && next < iconCandidates.length){
+                this.dataset.iconIndex = String(next);
+                this.src = iconCandidates[next];
+                return;
+              }
+
+              // 全部失败：回退默认 SVG
+              const svgBlob2 = new Blob([defaultIconSVG], { type:"image/svg+xml" });
+              const svgUrl2 = URL.createObjectURL(svgBlob2);
+              this.src = svgUrl2;
+              this.onload = function(){ URL.revokeObjectURL(svgUrl2); };
+            };
+
+            // 不满意时：点一下小图标就切换到下一个来源（不会打开链接）
+            icon.addEventListener("click", function(e){
+              e.preventDefault();
+              e.stopPropagation();
+              if(!iconCandidates || !iconCandidates.length) return;
+
+              let idx = parseInt(this.dataset.iconIndex || "0", 10);
+              if(!Number.isFinite(idx)) idx = 0;
+
+              const next = (idx + 1) % iconCandidates.length;
+              this.dataset.iconIndex = String(next);
+              this.src = iconCandidates[next];
+              writeIconChoice(link, next);
+            });
+
+
       };
-
-      // Click icon to cycle next source and remember (localStorage)
-      icon.addEventListener("click", function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        const cur = parseInt(icon.dataset.iconIndex || "0", 10);
-        const next = (cur + 1) % _candidates.length;
-        localStorage.setItem(_prefKey, String(next));
-        _setIconByIndex(next);
-      });
-
-};
 
       const title = document.createElement("div");
       title.className = "card-title";
@@ -2558,7 +2611,7 @@ body.dark-theme .admin-panel-hint{
       if(isLoggedIn){
         loginBtn.textContent = "退出登录";
         adminBtn.style.display = "inline-block";
-        adminBtn.textContent = isAdmin ? "离开设置" : "设置①";
+        adminBtn.textContent = isAdmin ? "离开设置③" : "设置①";
       }else{
         loginBtn.textContent = "登录";
         adminBtn.style.display = "none";
@@ -2620,7 +2673,7 @@ body.dark-theme .admin-panel-hint{
         addRemoveControls.style.display = "none";
         await reloadCardsAsAdmin();
         await customAlert("设置已保存", "设置完成");
-        logAction("离开设置");
+        logAction("离开设置③");
       }
 
       updateLoginButton();
@@ -2648,39 +2701,29 @@ body.dark-theme .admin-panel-hint{
     /* ================= Tooltip（卡片tips） ================= */
     function handleTooltipMouseMove(e, tips, adminMode){
       const tooltip = document.getElementById("custom-tooltip");
-      if(!tooltip) return;
-
       if(!tips || adminMode){
         tooltip.style.display = "none";
         return;
       }
-
       if(tooltip.textContent !== tips) tooltip.textContent = tips;
       tooltip.style.display = "block";
 
       const offsetX = 15, offsetY = 10;
-
-      // Use viewport coordinates so it works reliably with fixed headers / scrolling.
       const rect = tooltip.getBoundingClientRect();
       const pageWidth = window.innerWidth;
       const pageHeight = window.innerHeight;
 
-      const cx = (typeof e.clientX === "number") ? e.clientX : 0;
-      const cy = (typeof e.clientY === "number") ? e.clientY : 0;
+      let left = e.pageX + offsetX;
+      let top = e.pageY + offsetY;
 
-      let left = cx + offsetX;
-      let top = cy + offsetY;
-
-      // Keep tooltip within viewport
-      if(pageWidth - cx < 200) left = cx - rect.width - offsetX;
-      if(pageHeight - cy < 100) top = cy - rect.height - offsetY;
+      if(pageWidth - e.clientX < 200) left = e.pageX - rect.width - offsetX;
+      if(pageHeight - e.clientY < 100) top = e.pageY - rect.height - offsetY;
 
       tooltip.style.left = left + "px";
       tooltip.style.top = top + "px";
     }
     function handleTooltipMouseLeave(){
-      const tooltip = document.getElementById("custom-tooltip");
-      if(tooltip) tooltip.style.display = "none";
+      document.getElementById("custom-tooltip").style.display = "none";
     }
 
     /* ================= 书签搜索 ================= */
@@ -2963,6 +3006,13 @@ body.dark-theme .admin-panel-hint{
     }
 
     /* ================= 导出/导入（后台数据库） ================= */
+
+    function getExportFileName(){
+      const d = new Date();
+      const pad2 = (n)=>String(n).padStart(2,'0');
+      return d.getFullYear()+"."+pad2(d.getMonth()+1)+"."+pad2(d.getDate())+"."+pad2(d.getHours())+"."+pad2(d.getMinutes())+"."+pad2(d.getSeconds())+".json";
+    }
+
     async function exportData(){
       if(!await validateToken()) return;
       try{
@@ -2980,7 +3030,7 @@ body.dark-theme .admin-panel-hint{
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "cardtab_export.json";
+        a.download = getExportFileName();
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -3197,7 +3247,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
-<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作"></div>
+<div class="admin-panel-handle" onclick="openAdminPanel()" title="后台操作:"></div>
 
 
 <script>
