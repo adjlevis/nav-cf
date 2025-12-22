@@ -2529,7 +2529,7 @@ body.dark-theme .admin-panel-hint{
       if(isLoggedIn){
         loginBtn.textContent = "退出登录";
         adminBtn.style.display = "inline-block";
-        adminBtn.textContent = isAdmin ? "离开设置" : "设置";
+        adminBtn.textContent = isAdmin ? "离开设置" : "设置①";
       }else{
         loginBtn.textContent = "登录";
         adminBtn.style.display = "none";
@@ -3170,7 +3170,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const hint = document.createElement("span");
   hint.className = "admin-panel-hint";
-  hint.textContent = "点我";
+  hint.textContent = "点我②";
 
   document.body.appendChild(hint);
 
