@@ -232,7 +232,7 @@ export default {
       return jsonResponse({ success: true });
     }
 
-    /* ================= EXPORT ================= */
+/* ================= EXPORT ================= */
 if (url.pathname === "/api/exportData" && request.method === "GET") {
   const { hasAuthHeader, authed } = getAuthStatus(request, env);
   if (!hasAuthHeader || !authed) return unauthorized("Unauthorized");
@@ -242,7 +242,9 @@ if (url.pathname === "/api/exportData" && request.method === "GET") {
   const data = normalizeData(raw || SEED_DATA);
 
   // Dynamically generating the filename based on the current date and time
-  const timestampedFilename = new Date().toISOString().replace(/[-:T]/g, '.').split('.')[0];
+  const timestampedFilename = new Date().toLocaleString('zh-CN', { 
+    year: 'numeric', month: '2-digit', day: '2-digit', 
+    hour: '2-digit', minute: '2-digit' }).replace(/[^\d.]/g, '.'); 
 
   return new Response(JSON.stringify(data, null, 2), {
     headers: {
