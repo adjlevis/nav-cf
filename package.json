@@ -7,5 +7,6 @@
   },
   "devDependencies": {
     "wrangler": "^3.30.0"
-  }
+  },
+  "type": "module"  // 添加这一行
 }
