@@ -241,15 +241,17 @@ if (url.pathname === "/api/exportData" && request.method === "GET") {
   const raw = await env.CARD_ORDER.get(userId, "json");
   const data = normalizeData(raw || SEED_DATA);
 
-  // 动态生成文件名，格式为 年月日钟分.json
-  const timestampedFilename = new Date().toLocaleString('zh-CN', { 
-    year: 'numeric', month: '2-digit', day: '2-digit', 
-    hour: '2-digit', minute: '2-digit' }).replace(/[^\d.]/g, '.'); 
+  // Function to ensure two digits for date/time parts
+  const _pad2 = (n) => String(n).padStart(2, "0");
+  const _now = new Date();
+  // Generate the filename with current date and time (年月日钟分秒.json)
+  const _fileName = `${_now.getFullYear()}.${_pad2(_now.getMonth()+1)}.${_pad2(_now.getDate())}.${_pad2(_now.getHours())}.${_pad2(_now.getMinutes())}.${_pad2(_now.getSeconds())}.json`;
 
+  // Return the response with the generated file name
   return new Response(JSON.stringify(data, null, 2), {
     headers: {
       "content-type": "application/json; charset=UTF-8",
-      "content-disposition": `attachment; filename="${timestampedFilename}.json"`
+      "content-disposition": `attachment; filename="${_fileName}"`
     }
   });
 }
