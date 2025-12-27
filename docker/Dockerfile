@@ -14,7 +14,6 @@ RUN npm install --production
 COPY . .
 
 # 暴露端口（假设应用使用3000端口）
-EXPOSE 3000  # 如果使用其他端口，修改这里
-
+EXPOSE 3000  
 # 启动命令（确保 worker.js 是应用的入口文件）
 CMD ["node", "worker.js"]
