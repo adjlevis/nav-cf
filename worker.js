@@ -233,21 +233,25 @@ export default {
     }
 
     /* ================= EXPORT ================= */
-    if (url.pathname === "/api/exportData" && request.method === "GET") {
-      const { hasAuthHeader, authed } = getAuthStatus(request, env);
-      if (!hasAuthHeader || !authed) return unauthorized("Unauthorized");
+if (url.pathname === "/api/exportData" && request.method === "GET") {
+  const { hasAuthHeader, authed } = getAuthStatus(request, env);
+  if (!hasAuthHeader || !authed) return unauthorized("Unauthorized");
 
-      const userId = url.searchParams.get("userId") || SEED_USER_ID;
-      const raw = await env.CARD_ORDER.get(userId, "json");
-      const data = normalizeData(raw || SEED_DATA);
+  const userId = url.searchParams.get("userId") || SEED_USER_ID;
+  const raw = await env.CARD_ORDER.get(userId, "json");
+  const data = normalizeData(raw || SEED_DATA);
 
-      return new Response(JSON.stringify(data, null, 2), {
-        headers: {
-          "content-type": "application/json; charset=UTF-8",
-          "content-disposition": 'attachment; filename="cardtab_export.json"'
-        }
-      });
+  // Dynamically generating the filename based on the current date and time
+  const timestampedFilename = new Date().toISOString().replace(/[-:T]/g, '.').split('.')[0];
+
+  return new Response(JSON.stringify(data, null, 2), {
+    headers: {
+      "content-type": "application/json; charset=UTF-8",
+      "content-disposition": `attachment; filename="${timestampedFilename}.json"`
     }
+  });
+}
+
 
     /* ================= IMPORT ================= */
     if (url.pathname === "/api/importData" && request.method === "POST") {
