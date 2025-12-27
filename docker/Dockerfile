@@ -1,14 +1,17 @@
-# 使用 Node 20-alpine 镜像作为基础镜像
+# 使用 Node 20-alpine 作为基础镜像
 FROM node:20-alpine
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制所有应用代码到容器中
+# 复制所有文件到容器中的工作目录
 COPY . .
 
-# 暴露端口（假设应用监听3000端口）
+# 安装生产依赖
+RUN npm install --production
+
+# 暴露端口
 EXPOSE 3000
 
-# 启动应用（如果是 Node.js 应用，确保 worker.js 是入口文件）
+# 启动命令，确保 node 和 worker.js 路径正确
 CMD ["node", "worker.js"]
